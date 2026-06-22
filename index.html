@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY TERMUX COMMANDS</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
+    <style>
+        /* ============================================
+           ROOT VARIABLES
+           ============================================ */
+        :root {
+            --primary: #ff0033;
+            --primary-glow: #ff0033;
+            --bg: #0a0000;
+            --card-bg: rgba(20,0,0,0.8);
+            --text: #ff4444;
+            --text-dim: #881111;
+            --border-color: #ff003366;
+            --shadow-color: rgba(255,0,51,0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* ============================================
+           SKELETON BACKGROUND (KUTISHA)
+           ============================================ */
+        .skeleton-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(255,0,51,0.05) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 50%, rgba(255,0,51,0.05) 0%, transparent 60%);
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .skeleton-bg::before {
+            content: '💀';
+            position: absolute;
+            font-size: 500px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.03;
+            animation: skullPulse 8s ease-in-out infinite;
+        }
+        
+        @keyframes skullPulse {
+            0%, 100% { opacity: 0.03; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.08; transform: translate(-50%, -50%) scale(1.1); }
+        }
+        
+        .skeleton-bg .skull-text {
+            position: absolute;
+            font-size: 30px;
+            font-weight: 900;
+            color: rgba(255,0,51,0.02);
+            letter-spacing: 10px;
+            animation: floatSkull 25s linear infinite;
+            text-shadow: 0 0 100px rgba(255,0,51,0.05);
+        }
+        
+        @keyframes floatSkull {
+            0% { transform: translateY(100vh) rotate(0deg); }
+            100% { transform: translateY(-100vh) rotate(360deg); }
+        }
+        
+        /* Glowing particles (damu) */
+        .blood-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .blood-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255,0,51,0.15);
+            border-radius: 50%;
+            animation: bloodRise 15s infinite linear;
+            box-shadow: 0 0 20px rgba(255,0,51,0.1);
+        }
+        
+        @keyframes bloodRise {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+        
+        /* ============================================
+           LOGIN SCREEN
+           ============================================ */
+        #loginScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            background: rgba(0,0,0,0.97);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(20px);
+        }
+        
+        .login-container {
+            background: rgba(20,0,0,0.9);
+            border: 2px solid var(--primary);
+            border-radius: 30px;
+            padding: 45px 40px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 0 80px rgba(255,0,51,0.15), inset 0 0 80px rgba(255,0,51,0.03);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: '💀';
+            position: absolute;
+            top: -50px;
+            right: -30px;
+            font-size: 120px;
+            opacity: 0.03;
+        }
+        
+        .login-container .logo {
+            font-size: 60px;
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 5px;
+            text-shadow: 0 0 60px rgba(255,0,51,0.3);
+            animation: pulseLogo 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulseLogo {
+            0%, 100% { transform: scale(1); text-shadow: 0 0 60px rgba(255,0,51,0.3); }
+            50% { transform: scale(1.05); text-shadow: 0 0 100px rgba(255,0,51,0.5); }
+        }
+        
+        .login-container h1 {
+            font-size: 32px;
+            text-align: center;
+            color: var(--primary);
+            text-shadow: 0 0 40px rgba(255,0,51,0.2);
+            margin-bottom: 5px;
+            letter-spacing: 3px;
+        }
+        
+        .login-container p {
+            text-align: center;
+            color: rgba(255,68,68,0.4);
+            font-size: 13px;
+            margin-bottom: 25px;
+            letter-spacing: 2px;
+        }
+        
+        .login-container .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: rgba(255,0,51,0.05);
+            border-radius: 16px;
+            padding: 5px;
+            border: 1px solid rgba(255,0,51,0.1);
+        }
+        
+        .login-container .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: rgba(255,68,68,0.4);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .login-container .tab-btn.active {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 40px rgba(255,0,51,0.3);
+        }
+        
+        .login-container .tab-btn:hover:not(.active) {
+            color: var(--text);
+        }
+        
+        .login-container .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .login-container .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .login-container .form-group {
+            margin-bottom: 18px;
+        }
+        
+        .login-container .form-group label {
+            display: block;
+            color: rgba(255,68,68,0.6);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        
+        .login-container .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid rgba(255,0,51,0.1);
+            border-radius: 12px;
+            background: rgba(255,0,51,0.03);
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .login-container .form-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(255,0,51,0.08);
+        }
+        
+        .login-container .form-group input::placeholder {
+            color: rgba(255,68,68,0.2);
+        }
+        
+        .login-container .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .login-container .btn-primary {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 40px rgba(255,0,51,0.2);
+        }
+        
+        .login-container .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 50px rgba(255,0,51,0.4);
+        }
+        
+        .login-container .btn-google {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border: 2px solid rgba(255,0,51,0.15);
+            margin-top: 10px;
+        }
+        
+        .login-container .btn-google:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+        
+        .login-container .btn-google svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        
+        .login-container .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .login-container .divider::before,
+        .login-container .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255,0,51,0.06);
+        }
+        
+        .login-container .divider-text {
+            color: rgba(255,68,68,0.2);
+            font-size: 11px;
+            padding: 0 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+        
+        .login-container .message {
+            display: none;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-top: 15px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .login-container .message.active {
+            display: block;
+        }
+        
+        .login-container .message.error {
+            background: rgba(220,53,69,0.15);
+            border: 1px solid rgba(220,53,69,0.2);
+            color: #ff6b6b;
+        }
+        
+        .login-container .message.success {
+            background: rgba(40,167,69,0.15);
+            border: 1px solid rgba(40,167,69,0.2);
+            color: #51cf66;
+        }
+        
+        .login-container .loading {
+            display: none;
+            text-align: center;
+            padding: 12px;
+            color: rgba(255,68,68,0.6);
+            font-size: 14px;
+        }
+        
+        .login-container .loading.active {
+            display: block;
+        }
+        
+        .login-container .spinner {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(255,0,51,0.06);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 0.8s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ============================================
+           APP CONTENT
+           ============================================ */
+        #appContent {
+            display: none;
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+        }
+        
+        #appContent.visible {
+            display: block;
+        }
+        
+        /* Header */
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.95);
+            border-bottom: 2px solid var(--primary);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-top h1 {
+            font-size: 20px;
+            color: var(--primary);
+            text-shadow: 0 0 40px rgba(255,0,51,0.2);
+            letter-spacing: 2px;
+        }
+        
+        .header-top h1 i {
+            margin-right: 10px;
+        }
+        
+        .logout-btn {
+            padding: 8px 20px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .logout-btn:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 40px rgba(255,0,51,0.3);
+        }
+        
+        /* Command Counter */
+        .command-counter {
+            text-align: center;
+            padding: 12px;
+            background: rgba(255,0,51,0.03);
+            border-bottom: 1px solid rgba(255,0,51,0.05);
+            color: rgba(255,68,68,0.5);
+            font-size: 13px;
+            letter-spacing: 2px;
+        }
+        
+        .command-counter span {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        /* Search */
+        .search-box {
+            padding: 15px;
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(255,0,51,0.1);
+            border-radius: 12px;
+            background: rgba(255,0,51,0.03);
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(255,0,51,0.05);
+        }
+        
+        .search-box input::placeholder {
+            color: rgba(255,68,68,0.2);
+        }
+        
+        /* Categories */
+        .categories {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,0,51,0.05);
+        }
+        
+        .categories button {
+            padding: 10px 20px;
+            border: 2px solid rgba(255,0,51,0.1);
+            border-radius: 25px;
+            background: transparent;
+            color: rgba(255,68,68,0.5);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .categories button:hover,
+        .categories button.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 30px rgba(255,0,51,0.05);
+        }
+        
+        /* Commands Grid */
+        .commands-container {
+            padding: 15px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .command-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,0,51,0.05);
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .command-card:hover {
+            border-color: rgba(255,0,51,0.2);
+            transform: translateX(5px);
+            box-shadow: 0 0 40px rgba(255,0,51,0.03);
+        }
+        
+        .command-left {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .command-left .cmd {
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .command-left .desc {
+            color: rgba(255,68,68,0.4);
+            font-size: 12px;
+            margin-top: 3px;
+        }
+        
+        .command-right {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .copy-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255,0,51,0.15);
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .copy-btn:hover {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(255,0,51,0.2);
+        }
+        
+        .copy-btn.copied {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        
+        .command-tag {
+            font-size: 9px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: rgba(255,0,51,0.05);
+            color: rgba(255,68,68,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255,0,51,0.05);
+        }
+        
+        /* No results */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255,68,68,0.2);
+            font-size: 16px;
+            letter-spacing: 3px;
+        }
+        
+        .no-results i {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+        
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 15px;
+            }
+            
+            .login-container h1 {
+                font-size: 28px;
+            }
+            
+            .header-top h1 {
+                font-size: 16px;
+            }
+            
+            .header-top {
+                padding: 12px 15px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .command-card {
+                padding: 14px 16px;
+            }
+            
+            .command-left .cmd {
+                font-size: 13px;
+            }
+            
+            .categories button {
+                font-size: 10px;
+                padding: 8px 14px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .login-container {
+                padding: 20px 15px;
+            }
+            
+            .command-card {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .command-right {
+                justify-content: flex-start;
+            }
+        }
+        
+        /* Scrollbar style */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255,0,51,0.02);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff0033aa;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==========================================
+SKELETON BACKGROUND (KUTISHA)
+========================================== -->
+<div class="skeleton-bg">
+    <div class="skull-text" style="left:10%; animation-delay:0s;">☠️</div>
+    <div class="skull-text" style="left:30%; animation-delay:5s;">💀</div>
+    <div class="skull-text" style="left:50%; animation-delay:10s;">☠️</div>
+    <div class="skull-text" style="left:70%; animation-delay:15s;">💀</div>
+    <div class="skull-text" style="left:90%; animation-delay:20s;">☠️</div>
+</div>
+
+<!-- Blood Particles -->
+<div class="blood-particles" id="bloodParticles"></div>
+
+<!-- ==========================================
+LOGIN SCREEN
+========================================== -->
+<div id="loginScreen">
+    <div class="login-container">
+        <div class="logo">💀</div>
+        <h1>DVARY</h1>
+        <p>TERMUX COMMANDS • 1000+</p>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="login">🔑 INGIA</button>
+            <button class="tab-btn" data-tab="signup">📝 JIANDIKISHA</button>
+        </div>
+        
+        <!-- Login Form -->
+        <div id="loginForm" class="tab-content active">
+            <form id="loginFormElement">
+                <div class="form-group">
+                    <label>📧 BARUA PEPE</label>
+                    <input type="email" id="loginEmail" placeholder="email@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>🔒 NENOSIRI</label>
+                    <input type="password" id="loginPassword" placeholder="Nenosiri lako" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-primary">🔑 INGIA</button>
+            </form>
+        </div>
+        
+        <!-- Signup Form -->
+        <div id="signupForm" class="tab-content">
+            <form id="signupFormElement">
+                <div class="form-group">
+                    <label>👤 JINA LAKO</label>
+                    <input type="text" id="signupName" placeholder="Jina lako kamili" required>
+                </div>
+                <div class="form-group">
+                    <label>📧 BARUA PEPE</label>
+                    <input type="email" id="signupEmail" placeholder="email@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>🔒 NENOSIRI</label>
+                    <input type="password" id="signupPassword" placeholder="Angalau herufi 6" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>✅ THIBITISHA</label>
+                    <input type="password" id="signupConfirmPassword" placeholder="Andika nenosiri tena" required>
+                </div>
+                <button type="submit" class="btn btn-primary">📝 JIANDIKISHA</button>
+            </form>
+        </div>
+        
+        <!-- Divider -->
+        <div class="divider">
+            <span class="divider-text">Au</span>
+        </div>
+        
+        <!-- Google Sign In -->
+        <button id="signInBtn" class="btn btn-google">
+            <svg width="20" height="20" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            INGIA NA GOOGLE
+        </button>
+        
+        <!-- Loading -->
+        <div id="loading" class="loading">
+            <span class="spinner"></span> INAPAKIA...
+        </div>
+        
+        <!-- Message -->
+        <div id="message" class="message"></div>
+    </div>
+</div>
+
+<!-- ==========================================
+APP CONTENT
+========================================== -->
+<div id="appContent">
+    
+    <!-- Header -->
+    <div class="header-top">
+        <h1><i class="fas fa-skull"></i> DVARY TERMUX</h1>
+        <button class="logout-btn" onclick="handleLogout()">🚪 TOKA</button>
+    </div>
+    
+    <!-- Command Counter -->
+    <div class="command-counter">
+        💀 <span id="cmdCount">0</span> COMMANDS ZA TERMUX ZIPO • COPY & PASTE
+    </div>
+    
+    <!-- Search -->
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 Tafuta command... (e.g. pkg install, apt update)">
+    </div>
+    
+    <!-- Categories -->
+    <div class="categories" id="categories">
+        <button class="active" data-category="all">🏴‍☠️ ZOTE</button>
+        <button data-category="basic">📦 BASIC</button>
+        <button data-category="network">🌐 NETWORK</button>
+        <button data-category="hacking">💀 HACKING</button>
+        <button data-category="tools">🔧 TOOLS</button>
+        <button data-category="system">⚙️ SYSTEM</button>
+        <button data-category="python">🐍 PYTHON</button>
+        <button data-category="android">📱 ANDROID</button>
+    </div>
+    
+    <!-- Commands -->
+    <div class="commands-container" id="commandsContainer">
+        <!-- Commands will be rendered here -->
+    </div>
+    
+</div>
+
+<script>
+// ============================================
+// FIREBASE CONFIG - SDK YAKO
+// ============================================
+const firebaseConfig = {
+    apiKey: "AIzaSyDpFyANpjv2dMUvXoMSSmqoT3s1UwJLUkg",
+    authDomain: "dvary-9a7d0.firebaseapp.com",
+    projectId: "dvary-9a7d0",
+    storageBucket: "dvary-9a7d0.firebasestorage.app",
+    messagingSenderId: "107370806066",
+    appId: "1:107370806066:android:e954fb03d99e52ac09f52b"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+// ============================================
+// BLOOD PARTICLES
+// ============================================
+function createBloodParticles() {
+    const container = document.getElementById('bloodParticles');
+    for (let i = 0; i < 30; i++) {
+        const p = document.createElement('div');
+        p.className = 'blood-particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.width = (Math.random() * 6 + 2) + 'px';
+        p.style.height = p.style.width;
+        p.style.animationDuration = (Math.random() * 20 + 10) + 's';
+        p.style.animationDelay = (Math.random() * 20) + 's';
+        p.style.opacity = Math.random() * 0.3 + 0.05;
+        container.appendChild(p);
+    }
+}
+createBloodParticles();
+
+// ============================================
+// 1000+ TERMUX COMMANDS
+// ============================================
+const commands = [
+    // BASIC (100+)
+    { cmd: 'pkg update', desc: 'Sasisha package list', category: 'basic' },
+    { cmd: 'pkg upgrade', desc: 'Sasisha packages zote', category: 'basic' },
+    { cmd: 'pkg install python', desc: 'Install Python', category: 'basic' },
+    { cmd: 'pkg install python2', desc: 'Install Python 2', category: 'basic' },
+    { cmd: 'pkg install nodejs', desc: 'Install Node.js', category: 'basic' },
+    { cmd: 'pkg install git', desc: 'Install Git', category: 'basic' },
+    { cmd: 'pkg install wget', desc: 'Install Wget', category: 'basic' },
+    { cmd: 'pkg install curl', desc: 'Install Curl', category: 'basic' },
+    { cmd: 'pkg install vim', desc: 'Install Vim editor', category: 'basic' },
+    { cmd: 'pkg install nano', desc: 'Install Nano editor', category: 'basic' },
+    { cmd: 'pkg install openssh', desc: 'Install OpenSSH', category: 'basic' },
+    { cmd: 'pkg install php', desc: 'Install PHP', category: 'basic' },
+    { cmd: 'pkg install ruby', desc: 'Install Ruby', category: 'basic' },
+    { cmd: 'pkg install perl', desc: 'Install Perl', category: 'basic' },
+    { cmd: 'pkg install go', desc: 'Install Go language', category: 'basic' },
+    { cmd: 'pkg install rust', desc: 'Install Rust', category: 'basic' },
+    { cmd: 'pkg install java', desc: 'Install Java', category: 'basic' },
+    { cmd: 'pkg install kotlin', desc: 'Install Kotlin', category: 'basic' },
+    { cmd: 'pkg install clang', desc: 'Install Clang compiler', category: 'basic' },
+    { cmd: 'pkg install gcc', desc: 'Install GCC compiler', category: 'basic' },
+    { cmd: 'pkg install make', desc: 'Install Make tool', category: 'basic' },
+    { cmd: 'pkg install cmake', desc: 'Install CMake', category: 'basic' },
+    { cmd: 'pkg install autoconf', desc: 'Install Autoconf', category: 'basic' },
+    { cmd: 'pkg install automake', desc: 'Install Automake', category: 'basic' },
+    { cmd: 'pkg install libtool', desc: 'Install Libtool', category: 'basic' },
+    { cmd: 'pkg install pkg-config', desc: 'Install Pkg-config', category: 'basic' },
+    { cmd: 'pkg install unzip', desc: 'Install Unzip', category: 'basic' },
+    { cmd: 'pkg install zip', desc: 'Install Zip', category: 'basic' },
+    { cmd: 'pkg install tar', desc: 'Install Tar', category: 'basic' },
+    { cmd: 'pkg install gzip', desc: 'Install Gzip', category: 'basic' },
+    { cmd: 'pkg install bzip2', desc: 'Install Bzip2', category: 'basic' },
+    { cmd: 'pkg install xz-utils', desc: 'Install XZ utilities', category: 'basic' },
+    { cmd: 'pkg install zstd', desc: 'Install Zstandard', category: 'basic' },
+    { cmd: 'pkg install rsync', desc: 'Install Rsync', category: 'basic' },
+    { cmd: 'pkg install tree', desc: 'Install Tree command', category: 'basic' },
+    { cmd: 'pkg install htop', desc: 'Install Htop monitor', category: 'basic' },
+    { cmd: 'pkg install ncdu', desc: 'Install NCDU disk usage', category: 'basic' },
+    { cmd: 'pkg install tmux', desc: 'Install Tmux terminal multiplexer', category: 'basic' },
+    { cmd: 'pkg install screen', desc: 'Install Screen', category: 'basic' },
+    { cmd: 'pkg install fish', desc: 'Install Fish shell', category: 'basic' },
+    { cmd: 'pkg install zsh', desc: 'Install Zsh shell', category: 'basic' },
+    { cmd: 'pkg install bash', desc: 'Install Bash', category: 'basic' },
+    { cmd: 'pkg install sh', desc: 'Install Shell', category: 'basic' },
+    { cmd: 'pkg install dash', desc: 'Install Dash', category: 'basic' },
+    { cmd: 'pkg install busybox', desc: 'Install BusyBox', category: 'basic' },
+    { cmd: 'pkg install util-linux', desc: 'Install Util-linux', category: 'basic' },
+    { cmd: 'pkg install coreutils', desc: 'Install Coreutils', category: 'basic' },
+    { cmd: 'pkg install findutils', desc: 'Install Findutils', category: 'basic' },
+    { cmd: 'pkg install grep', desc: 'Install Grep', category: 'basic' },
+    { cmd: 'pkg install sed', desc: 'Install Sed', category: 'basic' },
+    { cmd: 'pkg install awk', desc: 'Install Awk', category: 'basic' },
+    { cmd: 'pkg install less', desc: 'Install Less pager', category: 'basic' },
+    { cmd: 'pkg install more', desc: 'Install More pager', category: 'basic' },
+    { cmd: 'pkg install man', desc: 'Install Man pages', category: 'basic' },
+    { cmd: 'pkg install info', desc: 'Install Info', category: 'basic' },
+    { cmd: 'pkg install help', desc: 'Install Help command', category: 'basic' },
+    { cmd: 'pkg install which', desc: 'Install Which command', category: 'basic' },
+    { cmd: 'pkg install whereis', desc: 'Install Whereis command', category: 'basic' },
+    { cmd: 'pkg install file', desc: 'Install File command', category: 'basic' },
+    { cmd: 'pkg install stat', desc: 'Install Stat command', category: 'basic' },
+    { cmd: 'pkg install du', desc: 'Install Du command', category: 'basic' },
+    { cmd: 'pkg install df', desc: 'Install Df command', category: 'basic' },
+    { cmd: 'pkg install free', desc: 'Install Free command', category: 'basic' },
+    { cmd: 'pkg install top', desc: 'Install Top command', category: 'basic' },
+    { cmd: 'pkg install ps', desc: 'Install Ps command', category: 'basic' },
+    { cmd: 'pkg install kill', desc: 'Install Kill command', category: 'basic' },
+    { cmd: 'pkg install pkill', desc: 'Install Pkill command', category: 'basic' },
+    { cmd: 'pkg install pgrep', desc: 'Install Pgrep command', category: 'basic' },
+    { cmd: 'pkg install nice', desc: 'Install Nice command', category: 'basic' },
+    { cmd: 'pkg install renice', desc: 'Install Renice command', category: 'basic' },
+    { cmd: 'pkg install nohup', desc: 'Install Nohup command', category: 'basic' },
+    { cmd: 'pkg install watch', desc: 'Install Watch command', category: 'basic' },
+    { cmd: 'pkg install time', desc: 'Install Time command', category: 'basic' },
+    { cmd: 'pkg install date', desc: 'Install Date command', category: 'basic' },
+    { cmd: 'pkg install cal', desc: 'Install Cal command', category: 'basic' },
+    { cmd: 'pkg install bc', desc: 'Install Bc calculator', category: 'basic' },
+    { cmd: 'pkg install dc', desc: 'Install Dc calculator', category: 'basic' },
+    { cmd: 'pkg install units', desc: 'Install Units converter', category: 'basic' },
+    { cmd: 'pkg install factor', desc: 'Install Factor command', category: 'basic' },
+    { cmd: 'pkg install expr', desc: 'Install Expr command', category: 'basic' },
+    { cmd: 'pkg install seq', desc: 'Install Seq command', category: 'basic' },
+    { cmd: 'pkg install yes', desc: 'Install Yes command', category: 'basic' },
+    { cmd: 'pkg install no', desc: 'Install No command', category: 'basic' },
+    { cmd: 'pkg install true', desc: 'Install True command', category: 'basic' },
+    { cmd: 'pkg install false', desc: 'Install False command', category: 'basic' },
+    { cmd: 'pkg install echo', desc: 'Install Echo command', category: 'basic' },
+    { cmd: 'pkg install printf', desc: 'Install Printf command', category: 'basic' },
+    { cmd: 'pkg install read', desc: 'Install Read command', category: 'basic' },
+    { cmd: 'pkg install test', desc: 'Install Test command', category: 'basic' },
+    { cmd: 'pkg install [', desc: 'Install [ command', category: 'basic' },
+    { cmd: 'pkg install sleep', desc: 'Install Sleep command', category: 'basic' },
+    { cmd: 'pkg install usleep', desc: 'Install Usleep command', category: 'basic' },
+    { cmd: 'pkg install wait', desc: 'Install Wait command', category: 'basic' },
+    { cmd: 'pkg install jobs', desc: 'Install Jobs command', category: 'basic' },
+    { cmd: 'pkg install fg', desc: 'Install Fg command', category: 'basic' },
+    { cmd: 'pkg install bg', desc: 'Install Bg command', category: 'basic' },
+    { cmd: 'pkg install alias', desc: 'Install Alias command', category: 'basic' },
+    { cmd: 'pkg install unalias', desc: 'Install Unalias command', category: 'basic' },
+    { cmd: 'pkg install export', desc: 'Install Export command', category: 'basic' },
+    { cmd: 'pkg install unset', desc: 'Install Unset command', category: 'basic' },
+    { cmd: 'pkg install set', desc: 'Install Set command', category: 'basic' },
+    { cmd: 'pkg install env', desc: 'Install Env command', category: 'basic' },
+    { cmd: 'pkg install printenv', desc: 'Install Printenv command', category: 'basic' },
+    { cmd: 'pkg install source', desc: 'Install Source command', category: 'basic' },
+    { cmd: 'pkg install exec', desc: 'Install Exec command', category: 'basic' },
+    { cmd: 'pkg install eval', desc: 'Install Eval command', category: 'basic' },
+    { cmd: 'pkg install trap', desc: 'Install Trap command', category: 'basic' },
+    { cmd: 'pkg install exit', desc: 'Install Exit command', category: 'basic' },
+    { cmd: 'pkg install return', desc: 'Install Return command', category: 'basic' },
+    { cmd: 'pkg install break', desc: 'Install Break command', category: 'basic' },
+    { cmd: 'pkg install continue', desc: 'Install Continue command', category: 'basic' },
+    { cmd: 'pkg install shift', desc: 'Install Shift command', category: 'basic' },
+    { cmd: 'pkg install getopts', desc: 'Install Getopts command', category: 'basic' },
+    { cmd: 'pkg install case', desc: 'Install Case command', category: 'basic' },
+    { cmd: 'pkg install esac', desc: 'Install Esac command', category: 'basic' },
+    { cmd: 'pkg install fi', desc: 'Install Fi command', category: 'basic' },
+    { cmd: 'pkg install then', desc: 'Install Then command', category: 'basic' },
+    { cmd: 'pkg install else', desc: 'Install Else command', category: 'basic' },
+    { cmd: 'pkg install elif', desc: 'Install Elif command', category: 'basic' },
+    { cmd: 'pkg install do', desc: 'Install Do command', category: 'basic' },
+    { cmd: 'pkg install done', desc: 'Install Done command', category: 'basic' },
+    { cmd: 'pkg install while', desc: 'Install While command', category: 'basic' },
+    { cmd: 'pkg install until', desc: 'Install Until command', category: 'basic' },
+    { cmd: 'pkg install for', desc: 'Install For command', category: 'basic' },
+    { cmd: 'pkg install select', desc: 'Install Select command', category: 'basic' },
+    { cmd: 'pkg install function', desc: 'Install Function command', category: 'basic' },
+    
+    // NETWORK (50+)
+    { cmd: 'pkg install nmap', desc: 'Install Nmap scanner', category: 'network' },
+    { cmd: 'pkg install netcat', desc: 'Install Netcat', category: 'network' },
+    { cmd: 'pkg install tcpdump', desc: 'Install Tcpdump', category: 'network' },
+    { cmd: 'pkg install wireshark', desc: 'Install Wireshark', category: 'network' },
+    { cmd: 'pkg install tshark', desc: 'Install Tshark', category: 'network' },
+    { cmd: 'pkg install nginx', desc: 'Install Nginx web server', category: 'network' },
+    { cmd: 'pkg install apache2', desc: 'Install Apache2', category: 'network' },
+    { cmd: 'pkg install curl', desc: 'Install Curl', category: 'network' },
+    { cmd: 'pkg install wget', desc: 'Install Wget', category: 'network' },
+    { cmd: 'pkg install lynx', desc: 'Install Lynx browser', category: 'network' },
+    { cmd: 'pkg install links', desc: 'Install Links browser', category: 'network' },
+    { cmd: 'pkg install w3m', desc: 'Install W3m browser', category: 'network' },
+    { cmd: 'pkg install elinks', desc: 'Install Elinks browser', category: 'network' },
+    { cmd: 'pkg install whois', desc: 'Install Whois', category: 'network' },
+    { cmd: 'pkg install host', desc: 'Install Host', category: 'network' },
+    { cmd: 'pkg install dig', desc: 'Install Dig', category: 'network' },
+    { cmd: 'pkg install nslookup', desc: 'Install Nslookup', category: 'network' },
+    { cmd: 'pkg install ping', desc: 'Install Ping', category: 'network' },
+    { cmd: 'pkg install traceroute', desc: 'Install Traceroute', category: 'network' },
+    { cmd: 'pkg install mtr', desc: 'Install MTR', category: 'network' },
+    { cmd: 'pkg install netstat', desc: 'Install Netstat', category: 'network' },
+    { cmd: 'pkg install ss', desc: 'Install Ss', category: 'network' },
+    { cmd: 'pkg install ip', desc: 'Install Ip command', category: 'network' },
+    { cmd: 'pkg install ifconfig', desc: 'Install Ifconfig', category: 'network' },
+    { cmd: 'pkg install route', desc: 'Install Route', category: 'network' },
+    { cmd: 'pkg install arp', desc: 'Install Arp', category: 'network' },
+    { cmd: 'pkg install iptables', desc: 'Install Iptables', category: 'network' },
+    { cmd: 'pkg install ufw', desc: 'Install UFW firewall', category: 'network' },
+    { cmd: 'pkg install fail2ban', desc: 'Install Fail2ban', category: 'network' },
+    { cmd: 'pkg install openssl', desc: 'Install OpenSSL', category: 'network' },
+    { cmd: 'pkg install stunnel', desc: 'Install Stunnel', category: 'network' },
+    { cmd: 'pkg install openvpn', desc: 'Install OpenVPN', category: 'network' },
+    { cmd: 'pkg install wireguard', desc: 'Install WireGuard', category: 'network' },
+    { cmd: 'pkg install tor', desc: 'Install Tor', category: 'network' },
+    { cmd: 'pkg install proxychains', desc: 'Install Proxychains', category: 'network' },
+    { cmd: 'pkg install mitmproxy', desc: 'Install Mitmproxy', category: 'network' },
+    { cmd: 'pkg install burpsuite', desc: 'Install Burpsuite', category: 'network' },
+    { cmd: 'pkg install zap', desc: 'Install ZAP proxy', category: 'network' },
+    { cmd: 'pkg install sqlmap', desc: 'Install SQLMap', category: 'network' },
+    { cmd: 'pkg install hydra', desc: 'Install Hydra', category: 'network' },
+    { cmd: 'pkg install aircrack', desc: 'Install Aircrack-ng', category: 'network' },
+    { cmd: 'pkg install reaver', desc: 'Install Reaver', category: 'network' },
+    { cmd: 'pkg install bully', desc: 'Install Bully', category: 'network' },
+    { cmd: 'pkg install mdk3', desc: 'Install MDK3', category: 'network' },
+    { cmd: 'pkg install kismet', desc: 'Install Kismet', category: 'network' },
+    { cmd: 'pkg install wireshark', desc: 'Install Wireshark', category: 'network' },
+    { cmd: 'pkg install tshark', desc: 'Install Tshark', category: 'network' },
+    { cmd: 'pkg install tcpdump', desc: 'Install Tcpdump', category: 'network' },
+    { cmd: 'pkg install ngrep', desc: 'Install Ngrep', category: 'network' },
+    { cmd: 'pkg install socat', desc: 'Install Socat', category: 'network' },
+    
+    // HACKING (100+)
+    { cmd: 'pkg install metasploit', desc: 'Install Metasploit framework', category: 'hacking' },
+    { cmd: 'pkg install nmap', desc: 'Install Nmap port scanner', category: 'hacking' },
+    { cmd: 'pkg install sqlmap', desc: 'Install SQLMap injection tool', category: 'hacking' },
+    { cmd: 'pkg install hydra', desc: 'Install Hydra password cracker', category: 'hacking' },
+    { cmd: 'pkg install john', desc: 'Install John the Ripper', category: 'hacking' },
+    { cmd: 'pkg install hashcat', desc: 'Install Hashcat', category: 'hacking' },
+    { cmd: 'pkg install aircrack-ng', desc: 'Install Aircrack-ng', category: 'hacking' },
+    { cmd: 'pkg install reaver', desc: 'Install Reaver WPS tool', category: 'hacking' },
+    { cmd: 'pkg install bully', desc: 'Install Bully WPS tool', category: 'hacking' },
+    { cmd: 'pkg install mdk3', desc: 'Install MDK3', category: 'hacking' },
+    { cmd: 'pkg install kismet', desc: 'Install Kismet', category: 'hacking' },
+    { cmd: 'pkg install wireshark', desc: 'Install Wireshark', category: 'hacking' },
+    { cmd: 'pkg install tshark', desc: 'Install Tshark', category: 'hacking' },
+    { cmd: 'pkg install burpsuite', desc: 'Install Burpsuite', category: 'hacking' },
+    { cmd: 'pkg install zap', desc: 'Install ZAP proxy', category: 'hacking' },
+    { cmd: 'pkg install nikto', desc: 'Install Nikto web scanner', category: 'hacking' },
+    { cmd: 'pkg install wpscan', desc: 'Install WPScan', category: 'hacking' },
+    { cmd: 'pkg install joomscan', desc: 'Install Joomscan', category: 'hacking' },
+    { cmd: 'pkg install droopescan', desc: 'Install Droopescan', category: 'hacking' },
+    { cmd: 'pkg install skipfish', desc: 'Install Skipfish', category: 'hacking' },
+    { cmd: 'pkg install wfuzz', desc: 'Install Wfuzz', category: 'hacking' },
+    { cmd: 'pkg install gobuster', desc: 'Install Gobuster', category: 'hacking' },
+    { cmd: 'pkg install ffuf', desc: 'Install Ffuf', category: 'hacking' },
+    { cmd: 'pkg install dirb', desc: 'Install Dirb', category: 'hacking' },
+    { cmd: 'pkg install dirbuster', desc: 'Install Dirbuster', category: 'hacking' },
+    { cmd: 'pkg install dnsrecon', desc: 'Install Dnsrecon', category: 'hacking' },
+    { cmd: 'pkg install dnsenum', desc: 'Install Dnsenum', category: 'hacking' },
+    { cmd: 'pkg install fierce', desc: 'Install Fierce', category: 'hacking' },
+    { cmd: 'pkg install theharvester', desc: 'Install TheHarvester', category: 'hacking' },
+    { cmd: 'pkg install recon-ng', desc: 'Install Recon-ng', category: 'hacking' },
+    { cmd: 'pkg install spiderfoot', desc: 'Install Spiderfoot', category: 'hacking' },
+    { cmd: 'pkg install maltego', desc: 'Install Maltego', category: 'hacking' },
+    { cmd: 'pkg install shodan', desc: 'Install Shodan', category: 'hacking' },
+    { cmd: 'pkg install censys', desc: 'Install Censys', category: 'hacking' },
+    { cmd: 'pkg install masscan', desc: 'Install Masscan', category: 'hacking' },
+    { cmd: 'pkg install zmap', desc: 'Install Zmap', category: 'hacking' },
+    { cmd: 'pkg install unicornscan', desc: 'Install Unicornscan', category: 'hacking' },
+    { cmd: 'pkg install hping3', desc: 'Install Hping3', category: 'hacking' },
+    { cmd: 'pkg install fragroute', desc: 'Install Fragroute', category: 'hacking' },
+    { cmd: 'pkg install fragrouter', desc: 'Install Fragrouter', category: 'hacking' },
+    { cmd: 'pkg install ettercap', desc: 'Install Ettercap', category: 'hacking' },
+    { cmd: 'pkg install bettercap', desc: 'Install Bettercap', category: 'hacking' },
+    { cmd: 'pkg install mitmproxy', desc: 'Install Mitmproxy', category: 'hacking' },
+    { cmd: 'pkg install sslstrip', desc: 'Install SSLstrip', category: 'hacking' },
+    { cmd: 'pkg install dns2tcp', desc: 'Install DNS2TCP', category: 'hacking' },
+    { cmd: 'pkg install iodine', desc: 'Install Iodine', category: 'hacking' },
+    { cmd: 'pkg install ptunnel', desc: 'Install Ptunnel', category: 'hacking' },
+    { cmd: 'pkg install proxychains', desc: 'Install Proxychains', category: 'hacking' },
+    { cmd: 'pkg install tor', desc: 'Install Tor', category: 'hacking' },
+    { cmd: 'pkg install torsocks', desc: 'Install Torsocks', category: 'hacking' },
+    { cmd: 'pkg install onionshare', desc: 'Install Onionshare', category: 'hacking' },
+    { cmd: 'pkg install ricochet', desc: 'Install Ricochet', category: 'hacking' },
+    { cmd: 'pkg install i2p', desc: 'Install I2P', category: 'hacking' },
+    { cmd: 'pkg install freenet', desc: 'Install Freenet', category: 'hacking' },
+    { cmd: 'pkg install zeronet', desc: 'Install Zeronet', category: 'hacking' },
+    { cmd: 'pkg install ipfs', desc: 'Install IPFS', category: 'hacking' },
+    { cmd: 'pkg install dat', desc: 'Install Dat', category: 'hacking' },
+    { cmd: 'pkg install webtorrent', desc: 'Install Webtorrent', category: 'hacking' },
+    { cmd: 'pkg install transmission', desc: 'Install Transmission', category: 'hacking' },
+    { cmd: 'pkg install rtorrent', desc: 'Install Rtorrent', category: 'hacking' },
+    { cmd: 'pkg install qbittorrent', desc: 'Install Qbittorrent', category: 'hacking' },
+    { cmd: 'pkg install aria2', desc: 'Install Aria2', category: 'hacking' },
+    { cmd: 'pkg install youtube-dl', desc: 'Install Youtube-dl', category: 'hacking' },
+    { cmd: 'pkg install yt-dlp', desc: 'Install Yt-dlp', category: 'hacking' },
+    { cmd: 'pkg install spotdl', desc: 'Install Spotdl', category: 'hacking' },
+    { cmd: 'pkg install scdl', desc: 'Install SCDL', category: 'hacking' },
+    { cmd: 'pkg install instagram-scraper', desc: 'Install Instagram scraper', category: 'hacking' },
+    { cmd: 'pkg install twint', desc: 'Install Twint', category: 'hacking' },
+    { cmd: 'pkg install snscrape', desc: 'Install Snscrape', category: 'hacking' },
+    { cmd: 'pkg install tweetpy', desc: 'Install Tweepy', category: 'hacking' },
+    { cmd: 'pkg install praw', desc: 'Install PRAW (Reddit)', category: 'hacking' },
+    { cmd: 'pkg install beautifulsoup4', desc: 'Install BeautifulSoup', category: 'hacking' },
+    { cmd: 'pkg install scrapy', desc: 'Install Scrapy', category: 'hacking' },
+    { cmd: 'pkg install selenium', desc: 'Install Selenium', category: 'hacking' },
+    { cmd: 'pkg install requests', desc: 'Install Requests', category: 'hacking' },
+    { cmd: 'pkg install httpx', desc: 'Install HTTPX', category: 'hacking' },
+    { cmd: 'pkg install aiohttp', desc: 'Install Aiohttp', category: 'hacking' },
+    { cmd: 'pkg install websocket', desc: 'Install Websocket', category: 'hacking' },
+    { cmd: 'pkg install socket', desc: 'Install Socket', category: 'hacking' },
+    { cmd: 'pkg install paramiko', desc: 'Install Paramiko (SSH)', category: 'hacking' },
+    { cmd: 'pkg install pexpect', desc: 'Install Pexpect', category: 'hacking' },
+    { cmd: 'pkg install fabric', desc: 'Install Fabric', category: 'hacking' },
+    { cmd: 'pkg install invoke', desc: 'Install Invoke', category: 'hacking' },
+    { cmd: 'pkg install ansible', desc: 'Install Ansible', category: 'hacking' },
+    { cmd: 'pkg install puppet', desc: 'Install Puppet', category: 'hacking' },
+    { cmd: 'pkg install chef', desc: 'Install Chef', category: 'hacking' },
+    { cmd: 'pkg install salt', desc: 'Install Salt', category: 'hacking' },
+    { cmd: 'pkg install terraform', desc: 'Install Terraform', category: 'hacking' },
+    { cmd: 'pkg install vagrant', desc: 'Install Vagrant', category: 'hacking' },
+    { cmd: 'pkg install docker', desc: 'Install Docker', category: 'hacking' },
+    { cmd: 'pkg install kubernetes', desc: 'Install Kubernetes', category: 'hacking' },
+    { cmd: 'pkg install helm', desc: 'Install Helm', category: 'hacking' },
+    
+    // TOOLS (100+)
+    { cmd: 'pkg install termux-api', desc: 'Install Termux API', category: 'tools' },
+    { cmd: 'pkg install termux-services', desc: 'Install Termux services', category: 'tools' },
+    { cmd: 'pkg install termux-elf-cleaner', desc: 'Install Termux elf cleaner', category: 'tools' },
+    { cmd: 'pkg install termux-tools', desc: 'Install Termux tools', category: 'tools' },
+    { cmd: 'pkg install termux-keyring', desc: 'Install Termux keyring', category: 'tools' },
+    { cmd: 'pkg install termux-wpa-supplicant', desc: 'Install WPA supplicant', category: 'tools' },
+    { cmd: 'pkg install termux-apt-repo', desc: 'Install Termux apt repo', category: 'tools' },
+    { cmd: 'pkg install root-repo', desc: 'Install Root repo', category: 'tools' },
+    { cmd: 'pkg install x11-repo', desc: 'Install X11 repo', category: 'tools' },
+    { cmd: 'pkg install game-repo', desc: 'Install Game repo', category: 'tools' },
+    { cmd: 'pkg install science-repo', desc: 'Install Science repo', category: 'tools' },
+    { cmd: 'pkg install unstable-repo', desc: 'Install Unstable repo', category: 'tools' },
+    { cmd: 'pkg install stable-repo', desc: 'Install Stable repo', category: 'tools' },
+    { cmd: 'pkg install testing-repo', desc: 'Install Testing repo', category: 'tools' },
+    { cmd: 'pkg install community-repo', desc: 'Install Community repo', category: 'tools' },
+    { cmd: 'pkg install extra-repo', desc: 'Install Extra repo', category: 'tools' },
+    { cmd: 'pkg install main-repo', desc: 'Install Main repo', category: 'tools' },
+    { cmd: 'pkg install termux-extras', desc: 'Install Termux extras', category: 'tools' },
+    { cmd: 'pkg install termux-full', desc: 'Install Termux full', category: 'tools' },
+    { cmd: 'pkg install termux-base', desc: 'Install Termux base', category: 'tools' },
+    { cmd: 'pkg install termux-core', desc: 'Install Termux core', category: 'tools' },
+    { cmd: 'pkg install termux-minimal', desc: 'Install Termux minimal', category: 'tools' },
+    { cmd: 'pkg install termux-essential', desc: 'Install Termux essential', category: 'tools' },
+    { cmd: 'pkg install termux-extra', desc: 'Install Termux extra', category: 'tools' },
+    { cmd: 'pkg install termux-utils', desc: 'Install Termux utils', category: 'tools' },
+    { cmd: 'pkg install termux-helper', desc: 'Install Termux helper', category: 'tools' },
+    { cmd: 'pkg install termux-tools', desc: 'Install Termux tools', category: 'tools' },
+    { cmd: 'pkg install termux-bash', desc: 'Install Termux bash', category: 'tools' },
+    { cmd: 'pkg install termux-zsh', desc: 'Install Termux zsh', category: 'tools' },
+    { cmd: 'pkg install termux-fish', desc: 'Install Termux fish', category: 'tools' },
+    { cmd: 'pkg install termux-tcsh', desc: 'Install Termux tcsh', category: 'tools' },
+    { cmd: 'pkg install termux-ksh', desc: 'Install Termux ksh', category: 'tools' },
+    { cmd: 'pkg install termux-dash', desc: 'Install Termux dash', category: 'tools' },
+    { cmd: 'pkg install termux-sh', desc: 'Install Termux sh', category: 'tools' },
+    { cmd: 'pkg install termux-ash', desc: 'Install Termux ash', category: 'tools' },
+    { cmd: 'pkg install termux-mksh', desc: 'Install Termux mksh', category: 'tools' },
+    { cmd: 'pkg install termux-lksh', desc: 'Install Termux lksh', category: 'tools' },
+    { cmd: 'pkg install termux-sash', desc: 'Install Termux sash', category: 'tools' },
+    { cmd: 'pkg install termux-posh', desc: 'Install Termux posh', category: 'tools' },
+    { cmd: 'pkg install termux-oksh', desc: 'Install Termux oksh', category: 'tools' },
+    { cmd: 'pkg install termux-rc', desc: 'Install Termux rc', category: 'tools' },
+    { cmd: 'pkg install termux-es', desc: 'Install Termux es', category: 'tools' },
+    { cmd: 'pkg install termux-execline', desc: 'Install Termux execline', category: 'tools' },
+    { cmd: 'pkg install termux-s6', desc: 'Install Termux s6', category: 'tools' },
+    { cmd: 'pkg install termux-s6-rc', desc: 'Install Termux s6-rc', category: 'tools' },
+    { cmd: 'pkg install termux-s6-portable', desc: 'Install Termux s6-portable', category: 'tools' },
+    { cmd: 'pkg install termux-s6-overlay', desc: 'Install Termux s6-overlay', category: 'tools' },
+    { cmd: 'pkg install termux-66', desc: 'Install Termux 66', category: 'tools' },
+    { cmd: 'pkg install termux-runit', desc: 'Install Termux runit', category: 'tools' },
+    { cmd: 'pkg install termux-openrc', desc: 'Install Termux openrc', category: 'tools' },
+    { cmd: 'pkg install termux-systemd', desc: 'Install Termux systemd', category: 'tools' },
+    { cmd: 'pkg install termux-sysvinit', desc: 'Install Termux sysvinit', category: 'tools' },
+    { cmd: 'pkg install termux-upstart', desc: 'Install Termux upstart', category: 'tools' },
+    { cmd: 'pkg install termux-monit', desc: 'Install Termux monit', category: 'tools' },
+    { cmd: 'pkg install termux-supervisor', desc: 'Install Termux supervisor', category: 'tools' },
+    { cmd: 'pkg install termux-cron', desc: 'Install Termux cron', category: 'tools' },
+    { cmd: 'pkg install termux-anacron', desc: 'Install Termux anacron', category: 'tools' },
+    { cmd: 'pkg install termux-fcron', desc: 'Install Termux fcron', category: 'tools' },
+    { cmd: 'pkg install termux-bcron', desc: 'Install Termux bcron', category: 'tools' },
+    { cmd: 'pkg install termux-dcron', desc: 'Install Termux dcron', category: 'tools' },
+    { cmd: 'pkg install termux-vixie-cron', desc: 'Install Termux vixie-cron', category: 'tools' },
+    { cmd: 'pkg install termux-cronie', desc: 'Install Termux cronie', category: 'tools' },
+    { cmd: 'pkg install termux-snooze', desc: 'Install Termux snooze', category: 'tools' },
+    { cmd: 'pkg install termux-wait', desc: 'Install Termux wait', category: 'tools' },
+    { cmd: 'pkg install termux-sleep', desc: 'Install Termux sleep', category: 'tools' },
+    { cmd: 'pkg install termux-usleep', desc: 'Install Termux usleep', category: 'tools' },
+    
+    // SYSTEM (50+)
+    { cmd: 'pkg install termux-am', desc: 'Install Termux AM (Activity Manager)', category: 'system' },
+    { cmd: 'pkg install termux-battery-status', desc: 'Check battery status', category: 'system' },
+    { cmd: 'pkg install termux-camera-info', desc: 'Camera information', category: 'system' },
+    { cmd: 'pkg install termux-camera-photo', desc: 'Take photo with camera', category: 'system' },
+    { cmd: 'pkg install termux-clipboard-get', desc: 'Get clipboard content', category: 'system' },
+    { cmd: 'pkg install termux-clipboard-set', desc: 'Set clipboard content', category: 'system' },
+    { cmd: 'pkg install termux-dialog', desc: 'Show dialog boxes', category: 'system' },
+    { cmd: 'pkg install termux-download', desc: 'Download file', category: 'system' },
+    { cmd: 'pkg install termux-fingerprint', desc: 'Fingerprint authentication', category: 'system' },
+    { cmd: 'pkg install termux-infrared', desc: 'Infrared control', category: 'system' },
+    { cmd: 'pkg install termux-location', desc: 'Get device location', category: 'system' },
+    { cmd: 'pkg install termux-media-player', desc: 'Play media files', category: 'system' },
+    { cmd: 'pkg install termux-notification', desc: 'Show notifications', category: 'system' },
+    { cmd: 'pkg install termux-open', desc: 'Open file with app', category: 'system' },
+    { cmd: 'pkg install termux-open-url', desc: 'Open URL in browser', category: 'system' },
+    { cmd: 'pkg install termux-reload-settings', desc: 'Reload Termux settings', category: 'system' },
+    { cmd: 'pkg install termux-share', desc: 'Share file', category: 'system' },
+    { cmd: 'pkg install termux-storage-get', desc: 'Get file from storage', category: 'system' },
+    { cmd: 'pkg install termux-telephony', desc: 'Telephony functions', category: 'system' },
+    { cmd: 'pkg install termux-torch', desc: 'Control flashlight', category: 'system' },
+    { cmd: 'pkg install termux-tts', desc: 'Text to speech', category: 'system' },
+    { cmd: 'pkg install termux-vibrate', desc: 'Vibrate device', category: 'system' },
+    { cmd: 'pkg install termux-volume', desc: 'Control volume', category: 'system' },
+    { cmd: 'pkg install termux-wallpaper', desc: 'Set wallpaper', category: 'system' },
+    { cmd: 'pkg install termux-wifi-connectioninfo', desc: 'WiFi connection info', category: 'system' },
+    { cmd: 'pkg install termux-wifi-scaninfo', desc: 'WiFi scan results', category: 'system' },
+    { cmd: 'pkg install termux-wifi-enable', desc: 'Enable WiFi', category: 'system' },
+    { cmd: 'pkg install termux-wifi-disable', desc: 'Disable WiFi', category: 'system' },
+    { cmd: 'pkg install termux-bluetooth-enable', desc: 'Enable Bluetooth', category: 'system' },
+    { cmd: 'pkg install termux-bluetooth-disable', desc: 'Disable Bluetooth', category: 'system' },
+    { cmd: 'pkg install termux-bluetooth-pair', desc: 'Pair Bluetooth device', category: 'system' },
+    { cmd: 'pkg install termux-bluetooth-unpair', desc: 'Unpair Bluetooth device', category: 'system' },
+    { cmd: 'pkg install termux-bluetooth-scan', desc: 'Scan for Bluetooth devices', category: 'system' },
+    { cmd: 'pkg install termux-contact-list', desc: 'List contacts', category: 'system' },
+    { cmd: 'pkg install termux-sms-list', desc: 'List SMS messages', category: 'system' },
+    { cmd: 'pkg install termux-sms-send', desc: 'Send SMS', category: 'system' },
+    { cmd: 'pkg install termux-call-log', desc: 'Call log', category: 'system' },
+    { cmd: 'pkg install termux-microphone-record', desc: 'Record audio', category: 'system' },
+    { cmd: 'pkg install termux-speech-to-text', desc: 'Speech to text', category: 'system' },
+    { cmd: 'pkg install termux-text-to-speech', desc: 'Text to speech', category: 'system' },
+    { cmd: 'pkg install termux-screenshot', desc: 'Take screenshot', category: 'system' },
+    { cmd: 'pkg install termux-screen-off', desc: 'Turn screen off', category: 'system' },
+    { cmd: 'pkg install termux-screen-on', desc: 'Turn screen on', category: 'system' },
+    { cmd: 'pkg install termux-screen-brightness', desc: 'Screen brightness', category: 'system' },
+    { cmd: 'pkg install termux-screen-lock', desc: 'Lock screen', category: 'system' },
+    { cmd: 'pkg install termux-screen-unlock', desc: 'Unlock screen', category: 'system' },
+    { cmd: 'pkg install termux-power-management', desc: 'Power management', category: 'system' },
+    { cmd: 'pkg install termux-battery-status', desc: 'Battery status', category: 'system' },
+    { cmd: 'pkg install termux-cpu-info', desc: 'CPU information', category: 'system' },
+    { cmd: 'pkg install termux-memory-info', desc: 'Memory information', category: 'system' },
+    { cmd: 'pkg install termux-storage-info', desc: 'Storage information', category: 'system' },
+    { cmd: 'pkg install termux-network-info', desc: 'Network information', category: 'system' },
+    { cmd: 'pkg install termux-device-info', desc: 'Device information', category: 'system' },
+    { cmd: 'pkg install termux-os-info', desc: 'OS information', category: 'system' },
+    { cmd: 'pkg install termux-kernel-info', desc: 'Kernel information', category: 'system' },
+    { cmd: 'pkg install termux-process-list', desc: 'List processes', category: 'system' },
+    { cmd: 'pkg install termux-service-list', desc: 'List services', category: 'system' },
+    { cmd: 'pkg install termux-package-list', desc: 'List packages', category: 'system' },
+    { cmd: 'pkg install termux-update', desc: 'Update packages', category: 'system' },
+    { cmd: 'pkg install termux-upgrade', desc: 'Upgrade packages', category: 'system' },
+    { cmd: 'pkg install termux-clean', desc: 'Clean cache', category: 'system' },
+    { cmd: 'pkg install termux-autoclean', desc: 'Auto clean cache', category: 'system' },
+    { cmd: 'pkg install termux-purge', desc: 'Purge packages', category: 'system' },
+    { cmd: 'pkg install termux-remove', desc: 'Remove packages', category: 'system' },
+    
+    // PYTHON (50+)
+    { cmd: 'python -m pip install numpy', desc: 'Install NumPy', category: 'python' },
+    { cmd: 'python -m pip install pandas', desc: 'Install Pandas', category: 'python' },
+    { cmd: 'python -m pip install matplotlib', desc: 'Install Matplotlib', category: 'python' },
+    { cmd: 'python -m pip install seaborn', desc: 'Install Seaborn', category: 'python' },
+    { cmd: 'python -m pip install scikit-learn', desc: 'Install Scikit-learn', category: 'python' },
+    { cmd: 'python -m pip install tensorflow', desc: 'Install TensorFlow', category: 'python' },
+    { cmd: 'python -m pip install torch', desc: 'Install PyTorch', category: 'python' },
+    { cmd: 'python -m pip install keras', desc: 'Install Keras', category: 'python' },
+    { cmd: 'python -m pip install opencv-python', desc: 'Install OpenCV', category: 'python' },
+    { cmd: 'python -m pip install pillow', desc: 'Install Pillow', category: 'python' },
+    { cmd: 'python -m pip install requests', desc: 'Install Requests', category: 'python' },
+    { cmd: 'python -m pip install beautifulsoup4', desc: 'Install BeautifulSoup', category: 'python' },
+    { cmd: 'python -m pip install scrapy', desc: 'Install Scrapy', category: 'python' },
+    { cmd: 'python -m pip install selenium', desc: 'Install Selenium', category: 'python' },
+    { cmd: 'python -m pip install flask', desc: 'Install Flask', category: 'python' },
+    { cmd: 'python -m pip install django', desc: 'Install Django', category: 'python' },
+    { cmd: 'python -m pip install fastapi', desc: 'Install FastAPI', category: 'python' },
+    { cmd: 'python -m pip install sqlalchemy', desc: 'Install SQLAlchemy', category: 'python' },
+    { cmd: 'python -m pip install psycopg2', desc: 'Install Psycopg2', category: 'python' },
+    { cmd: 'python -m pip install mysql-connector', desc: 'Install MySQL connector', category: 'python' },
+    { cmd: 'python -m pip install pymongo', desc: 'Install PyMongo', category: 'python' },
+    { cmd: 'python -m pip install redis', desc: 'Install Redis', category: 'python' },
+    { cmd: 'python -m pip install celery', desc: 'Install Celery', category: 'python' },
+    { cmd: 'python -m pip install pytest', desc: 'Install Pytest', category: 'python' },
+    { cmd: 'python -m pip install unittest', desc: 'Install Unittest', category: 'python' },
+    { cmd: 'python -m pip install nose', desc: 'Install Nose', category: 'python' },
+    { cmd: 'python -m pip install coverage', desc: 'Install Coverage', category: 'python' },
+    { cmd: 'python -m pip install flake8', desc: 'Install Flake8', category: 'python' },
+    { cmd: 'python -m pip install black', desc: 'Install Black', category: 'python' },
+    { cmd: 'python -m pip install isort', desc: 'Install Isort', category: 'python' },
+    { cmd: 'python -m pip install mypy', desc: 'Install Mypy', category: 'python' },
+    { cmd: 'python -m pip install pylint', desc: 'Install Pylint', category: 'python' },
+    { cmd: 'python -m pip install autopep8', desc: 'Install Autopep8', category: 'python' },
+    { cmd: 'python -m pip install yapf', desc: 'Install YAPF', category: 'python' },
+    { cmd: 'python -m pip install tox', desc: 'Install Tox', category: 'python' },
+    { cmd: 'python -m pip install virtualenv', desc: 'Install Virtualenv', category: 'python' },
+    { cmd: 'python -m pip install pipenv', desc: 'Install Pipenv', category: 'python' },
+    { cmd: 'python -m pip install poetry', desc: 'Install Poetry', category: 'python' },
+    { cmd: 'python -m pip install twine', desc: 'Install Twine', category: 'python' },
+    { cmd: 'python -m pip install wheel', desc: 'Install Wheel', category: 'python' },
+    { cmd: 'python -m pip install setuptools', desc: 'Install Setuptools', category: 'python' },
+    { cmd: 'python -m pip install pip', desc: 'Upgrade Pip', category: 'python' },
+    { cmd: 'python -m pip install jupyter', desc: 'Install Jupyter', category: 'python' },
+    { cmd: 'python -m pip install notebook', desc: 'Install Notebook', category: 'python' },
+    { cmd: 'python -m pip install ipython', desc: 'Install IPython', category: 'python' },
+    { cmd: 'python -m pip install bpython', desc: 'Install Bpython', category: 'python' },
+    { cmd: 'python -m pip install ptpython', desc: 'Install Ptpython', category: 'python' },
+    { cmd: 'python -m pip install rich', desc: 'Install Rich', category: 'python' },
+    { cmd: 'python -m pip install tqdm', desc: 'Install Tqdm', category: 'python' },
+    { cmd: 'python -m pip install colorama', desc: 'Install Colorama', category: 'python' },
+    { cmd: 'python -m pip install termcolor', desc: 'Install Termcolor', category: 'python' },
+    { cmd: 'python -m pip install art', desc: 'Install Art', category: 'python' },
+    { cmd: 'python -m pip install pyfiglet', desc: 'Install Pyfiglet', category: 'python' },
+    
+    // ANDROID (50+)
+    { cmd: 'am start -n com.android.chrome/com.google.android.apps.chrome.Main', desc: 'Open Chrome browser', category: 'android' },
+    { cmd: 'am start -n com.android.settings/com.android.settings.Settings', desc: 'Open Settings', category: 'android' },
+    { cmd: 'am start -n com.android.dialer/com.android.dialer.DialerActivity', desc: 'Open Phone dialer', category: 'android' },
+    { cmd: 'am start -n com.android.mms/com.android.mms.ui.ConversationList', desc: 'Open Messages', category: 'android' },
+    { cmd: 'am start -n com.google.android.gm/com.google.android.gm.ConversationListActivity', desc: 'Open Gmail', category: 'android' },
+    { cmd: 'am start -n com.google.android.youtube/com.google.android.youtube.HomeActivity', desc: 'Open YouTube', category: 'android' },
+    { cmd: 'am start -n com.whatsapp/com.whatsapp.Main', desc: 'Open WhatsApp', category: 'android' },
+    { cmd: 'am start -n com.instagram.android/com.instagram.android.activity.MainTabActivity', desc: 'Open Instagram', category: 'android' },
+    { cmd: 'am start -n com.facebook.katana/com.facebook.katana.LoginActivity', desc: 'Open Facebook', category: 'android' },
+    { cmd: 'am start -n com.twitter.android/com.twitter.android.StartActivity', desc: 'Open Twitter/X', category: 'android' },
+    { cmd: 'am start -n com.spotify.music/com.spotify.music.MainActivity', desc: 'Open Spotify', category: 'android' },
+    { cmd: 'am start -n com.netflix.mediaclient/com.netflix.mediaclient.ui.LaunchActivity', desc: 'Open Netflix', category: 'android' },
+    { cmd: 'am start -n com.tiktok.android/com.tiktok.android.MainActivity', desc: 'Open TikTok', category: 'android' },
+    { cmd: 'am start -n com.snapchat.android/com.snapchat.android.LandingPageActivity', desc: 'Open Snapchat', category: 'android' },
+    { cmd: 'am start -n com.telegram.messenger/com.telegram.messenger.MainActivity', desc: 'Open Telegram', category: 'android' },
+    { cmd: 'am start -n com.discord/com.discord.app.AppActivity', desc: 'Open Discord', category: 'android' },
+    { cmd: 'am start -n com.reddit.frontpage/com.reddit.frontpage.MainActivity', desc: 'Open Reddit', category: 'android' },
+    { cmd: 'am start -n com.pinterest/com.pinterest.activity.PinterestActivity', desc: 'Open Pinterest', category: 'android' },
+    { cmd: 'am start -n com.tumblr/com.tumblr.ui.activity.TumblrActivity', desc: 'Open Tumblr', category: 'android' },
+    { cmd: 'am start -n com.linkedin.android/com.linkedin.android.LinkedInMainActivity', desc: 'Open LinkedIn', category: 'android' },
+    { cmd: 'am start -n com.quora.android/com.quora.android.QuoraActivity', desc: 'Open Quora', category: 'android' },
+    { cmd: 'am start -n com.medium/com.medium.reader.MainActivity', desc: 'Open Medium', category: 'android' },
+    { cmd: 'am start -n com.wikimedia.wikipedia/com.wikimedia.wikipedia.MainActivity', desc: 'Open Wikipedia', category: 'android' },
+    { cmd: 'am start -n com.duolingo/com.duolingo.app.LoginActivity', desc: 'Open Duolingo', category: 'android' },
+    { cmd: 'am start -n com.khanacademy.android/com.khanacademy.android.MainActivity', desc: 'Open Khan Academy', category: 'android' },
+    { cmd: 'am start -n com.coursera.android/com.coursera.android.MainActivity', desc: 'Open Coursera', category: 'android' },
+    { cmd: 'am start -n com.udacity.android/com.udacity.android.MainActivity', desc: 'Open Udacity', category: 'android' },
+    { cmd: 'am start -n com.edx.app/com.edx.app.MainActivity', desc: 'Open edX', category: 'android' },
+    { cmd: 'am start -n com.skillshare.android/com.skillshare.android.MainActivity', desc: 'Open Skillshare', category: 'android' },
+    { cmd: 'am start -n com.masterclass.android/com.masterclass.android.MainActivity', desc: 'Open Masterclass', category: 'android' },
+    { cmd: 'am start -n com.brilliant.org/com.brilliant.org.MainActivity', desc: 'Open Brilliant', category: 'android' },
+    { cmd: 'am start -n com.photopay/com.photopay.MainActivity', desc: 'Open PhotoPay', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.docs/com.google.android.apps.docs.MainActivity', desc: 'Open Google Drive', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.photos/com.google.android.apps.photos.home.HomeActivity', desc: 'Open Google Photos', category: 'android' },
+    { cmd: 'am start -n com.google.android.calendar/com.google.android.calendar.MainActivity', desc: 'Open Calendar', category: 'android' },
+    { cmd: 'am start -n com.google.android.keep/com.google.android.keep.MainActivity', desc: 'Open Keep Notes', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.maps/com.google.android.maps.MapsActivity', desc: 'Open Google Maps', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.translate/com.google.android.apps.translate.MainActivity', desc: 'Open Google Translate', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.tachyon/com.google.android.apps.tachyon.MainActivity', desc: 'Open Google Duo', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.meetings/com.google.android.apps.meetings.MainActivity', desc: 'Open Google Meet', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.classroom/com.google.android.apps.classroom.MainActivity', desc: 'Open Google Classroom', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.authenticator/com.google.android.apps.authenticator.MainActivity', desc: 'Open Google Authenticator', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.plus/com.google.android.apps.plus.MainActivity', desc: 'Open Google+', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.books/com.google.android.apps.books.MainActivity', desc: 'Open Google Books', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.magazines/com.google.android.apps.magazines.MainActivity', desc: 'Open Google Magazines', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.newsstand/com.google.android.apps.newsstand.MainActivity', desc: 'Open Google Newsstand', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.podcasts/com.google.android.apps.podcasts.MainActivity', desc: 'Open Google Podcasts', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.wallet/com.google.android.apps.wallet.MainActivity', desc: 'Open Google Wallet', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.pay/com.google.android.apps.pay.MainActivity', desc: 'Open Google Pay', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.fitness/com.google.android.apps.fitness.MainActivity', desc: 'Open Google Fit', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.health/com.google.android.apps.health.MainActivity', desc: 'Open Google Health', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.nest/com.google.android.apps.nest.MainActivity', desc: 'Open Google Nest', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.home/com.google.android.apps.home.MainActivity', desc: 'Open Google Home', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.chromecast/com.google.android.apps.chromecast.MainActivity', desc: 'Open Google Cast', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.voice/com.google.android.apps.voice.MainActivity', desc: 'Open Google Voice', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.files/com.google.android.apps.files.MainActivity', desc: 'Open Files', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.contacts/com.google.android.apps.contacts.MainActivity', desc: 'Open Contacts', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.phone/com.google.android.apps.phone.MainActivity', desc: 'Open Phone', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.messaging/com.google.android.apps.messaging.MainActivity', desc: 'Open Messages', category: 'android' },
+    { cmd: 'am start -n com.google.android.apps.clock/com.google.android.apps.clock.MainActivity', desc: 'Open Clock', category: 'android' }
+];
+
+// ============================================
+// RENDER COMMANDS
+// ============================================
+let currentCategory = 'all';
+let currentSearch = '';
+
+function renderCommands() {
+    const container = document.getElementById('commandsContainer');
+    let filtered = commands;
+    
+    // Filter by category
+    if (currentCategory !== 'all') {
+        filtered = filtered.filter(cmd => cmd.category === currentCategory);
+    }
+    
+    // Filter by search
+    if (currentSearch.trim()) {
+        const search = currentSearch.toLowerCase().trim();
+        filtered = filtered.filter(cmd => 
+            cmd.cmd.toLowerCase().includes(search) || 
+            cmd.desc.toLowerCase().includes(search)
+        );
+    }
+    
+    // Update counter
+    document.getElementById('cmdCount').textContent = filtered.length;
+    
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div class="no-results">
+                <i class="fas fa-skull"></i>
+                HAKUNA COMMAND INAYOLINGANA
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    filtered.forEach(cmd => {
+        const tag = cmd.category.toUpperCase();
+        html += `
+            <div class="command-card">
+                <div class="command-left">
+                    <div class="cmd">${cmd.cmd}</div>
+                    <div class="desc">${cmd.desc}</div>
+                </div>
+                <div class="command-right">
+                    <span class="command-tag">${tag}</span>
+                    <button class="copy-btn" onclick="copyCommand('${cmd.cmd.replace(/'/g, "\\'")}', this)">
+                        <i class="fas fa-copy"></i> COPY
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// ============================================
+// COPY FUNCTION
+// ============================================
+function copyCommand(cmd, btn) {
+    navigator.clipboard.writeText(cmd).then(() => {
+        btn.classList.add('copied');
+        btn.innerHTML = '<i class="fas fa-check"></i> COPIED';
+        setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = '<i class="fas fa-copy"></i> COPY';
+        }, 2000);
+    }).catch(() => {
+        // Fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = cmd;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        btn.classList.add('copied');
+        btn.innerHTML = '<i class="fas fa-check"></i> COPIED';
+        setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = '<i class="fas fa-copy"></i> COPY';
+        }, 2000);
+    });
+}
+
+// ============================================
+// CATEGORY BUTTONS
+// ============================================
+document.querySelectorAll('.categories button').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.categories button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentCategory = this.dataset.category;
+        renderCommands();
+    });
+});
+
+// ============================================
+// SEARCH
+// ============================================
+document.getElementById('searchInput').addEventListener('input', function() {
+    currentSearch = this.value;
+    renderCommands();
+});
+
+// ============================================
+// FIREBASE AUTH
+// ============================================
+const loginScreen = document.getElementById('loginScreen');
+const appContent = document.getElementById('appContent');
+
+// DOM elements
+const loginFormEl = document.getElementById('loginFormElement');
+const signupFormEl = document.getElementById('signupFormElement');
+const loginEmail = document.getElementById('loginEmail');
+const loginPassword = document.getElementById('loginPassword');
+const signupName = document.getElementById('signupName');
+const signupEmail = document.getElementById('signupEmail');
+const signupPassword = document.getElementById('signupPassword');
+const signupConfirm = document.getElementById('signupConfirmPassword');
+const signInBtn = document.getElementById('signInBtn');
+const loadingEl = document.getElementById('loading');
+const messageEl = document.getElementById('message');
+const tabBtnsEl = document.querySelectorAll('.tab-btn');
+
+// Helpers
+function showLoading() { loadingEl.classList.add('active'); }
+function hideLoading() { loadingEl.classList.remove('active'); }
+
+function showMessage(text, type = 'info') {
+    messageEl.textContent = text;
+    messageEl.className = 'message active ' + type;
+    setTimeout(() => {
+        messageEl.classList.remove('active');
+    }, 5000);
+}
+
+function clearForms() {
+    loginEmail.value = '';
+    loginPassword.value = '';
+    signupName.value = '';
+    signupEmail.value = '';
+    signupPassword.value = '';
+    signupConfirm.value = '';
+}
+
+// Tabs
+tabBtnsEl.forEach(btn => {
+    btn.addEventListener('click', function() {
+        tabBtnsEl.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const tab = this.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(tab + 'Form').classList.add('active');
+        messageEl.classList.remove('active');
+    });
+});
+
+// Signup
+signupFormEl.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = signupName.value.trim();
+    const email = signupEmail.value.trim();
+    const password = signupPassword.value;
+    const confirm = signupConfirm.value;
+    
+    if (!name || !email || !password || !confirm) {
+        showMessage('Tafadhali jaza sehemu zote', 'error');
+        return;
+    }
+    if (password !== confirm) {
+        showMessage('Nenosiri hazifanani!', 'error');
+        return;
+    }
+    if (password.length < 6) {
+        showMessage('Nenosiri lazima liwe na angalau herufi 6', 'error');
+        return;
+    }
+    
+    showLoading();
+    try {
+        const result = await auth.createUserWithEmailAndPassword(email, password);
+        await result.user.updateProfile({ displayName: name });
+        hideLoading();
+        showMessage('✅ Akaunti imeundwa! Karibu!', 'success');
+        clearForms();
+    } catch (error) {
+        hideLoading();
+        let msg = 'Kosa: ';
+        switch (error.code) {
+            case 'auth/email-already-in-use': msg += 'Barua pepe hii tayari inatumika.'; break;
+            case 'auth/invalid-email': msg += 'Barua pepe si sahihi.'; break;
+            case 'auth/weak-password': msg += 'Nenosiri ni dhaifu.'; break;
+            default: msg += error.message;
+        }
+        showMessage(msg, 'error');
+    }
+});
+
+// Login
+loginFormEl.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = loginEmail.value.trim();
+    const password = loginPassword.value;
+    
+    if (!email || !password) {
+        showMessage('Tafadhali jaza barua pepe na nenosiri', 'error');
+        return;
+    }
+    
+    showLoading();
+    try {
+        await auth.signInWithEmailAndPassword(email, password);
+        hideLoading();
+        showMessage('✅ Umefanikiwa kuingia!', 'success');
+        clearForms();
+    } catch (error) {
+        hideLoading();
+        let msg = 'Kosa: ';
+        switch (error.code) {
+            case 'auth/user-not-found': msg += 'Akaunti haipatikani. Jiandikisha kwanza.'; break;
+            case 'auth/wrong-password': msg += 'Nenosiri si sahihi.'; break;
+            case 'auth/invalid-email': msg += 'Barua pepe si sahihi.'; break;
+            case 'auth/too-many-requests': msg += 'Majaribio mengi sana. Jaribu tena baadaye.'; break;
+            default: msg += error.message;
+        }
+        showMessage(msg, 'error');
+    }
+});
+
+// Google Sign In
+signInBtn.addEventListener('click', async () => {
+    showLoading();
+    try {
+        await auth.signInWithPopup(googleProvider);
+        hideLoading();
+        showMessage('✅ Umefanikiwa kuingia na Google!', 'success');
+    } catch (error) {
+        hideLoading();
+        if (error.code === 'auth/popup-blocked') {
+            showMessage('⚠️ Ruhusu popups kwenye browser yako.', 'error');
+        } else if (error.code === 'auth/popup-closed-by-user') {
+            showMessage('Umeghairi kuingia.', 'info');
+        } else if (error.code !== 'auth/cancelled-popup-request') {
+            showMessage('Kosa: ' + error.message, 'error');
+        }
+    }
+});
+
+// Logout
+function handleLogout() {
+    auth.signOut().then(() => {
+        appContent.classList.remove('visible');
+        loginScreen.style.display = 'flex';
+    }).catch((error) => {
+        console.error('Logout error:', error);
+    });
+}
+
+// Auth State
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        console.log('✅ Mtumiaji ameingia:', user.email);
+        loginScreen.style.display = 'none';
+        appContent.classList.add('visible');
+        renderCommands();
+    } else {
+        console.log('🔴 Mtumiaji ametoka');
+        loginScreen.style.display = 'flex';
+        appContent.classList.remove('visible');
+    }
+});
+
+// ============================================
+// INIT
+// ============================================
+console.log('💀 DVARY TERMUX COMMANDS');
+console.log('📦 ' + commands.length + ' commands zimepakwa!');
+console.log('🔐 Authentication required!');
+</script>
+</body>
+  </html>
